@@ -4,13 +4,13 @@ Solution: remove duplicates and check UMIs
 import all the things
 
 open SAM for read
-open UMI for read
+open UMI for read (STL96.txt)
 open newSAM for write
 
 for line in UMI
 	append UMI to UMIlist: list
 
-Create seqtrack: list #this will hold known sequences
+Create seqtrack: list   #this will hold known sequences
 
 for each line in SAM #until lines no longer start with @ symbol
 	header: string += all lines that start with @ 
