@@ -1,0 +1,46 @@
+Problem: SAM file contains duplicated sequences
+Solution: remove duplicates and check UMIs
+
+import all the things
+
+open SAM for read
+open UMI for read
+open newSAM for write
+
+for line in UMI
+	append UMI to UMIlist: list
+
+Create seqtrack: list #this will hold known sequences
+
+for each line in SAM #until lines no longer start with @ symbol
+	header: string += all lines that start with @ 
+
+write header to newSAM file
+
+for each line in SAM #after header
+	Create seqlist: list #temporary 
+	Split(\t) columns into list [0-11] (QNAME, FLAG, RNAME, etc)
+	11 holds all data after quality column (not mandatory for SAM)
+	seqlist = [the, split, list, of, columns]
+	
+	seqlist[0] = checkumi(seqlist[0]) -> string  #pass qname to checkumi() since it holds the UMI
+	
+	if seqlist[0] is not 0   #this means the UMI was preserved or corrected	
+		if sequence or seqlist[10] not in seqtrack #meaning the sequence is not a duplicate
+			add sequence to seqtrack
+				append seqlist to new SAM file, tab separated
+	
+#check hamming distance for the UMI against UMIlist, discard any hams > 1
+function checkumi(qname: string) -> string
+	if qname[:8] is found in UMIlist:
+		return qname because UMI is valid
+	else if qname[:8] is not found in UMIlist: 
+		for umi in UMIlist #check hamming distance of all UMIs
+			ham = 0
+			for i in range(8):
+				if qname[i] != umi[i]:
+					ham + 1
+			if ham < 2 (meaning if the string has less than 2 different characters)
+				replace qname[:8] with current UMI
+				return qname
+		return 0 #no matches, UMI is invalid
