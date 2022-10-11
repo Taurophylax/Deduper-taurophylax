@@ -4,31 +4,47 @@ Solution: remove duplicates and check UMIs
 import all the things
 
 open SAM for read
-open UMI for read (STL96.txt)
+open UMI for read
 open newSAM for write
 
 for line in UMI
 	append UMI to UMIlist: list
 
-Create seqtrack: list   #this will hold known sequences
+Example: UMIlist = [AACGGCAT, AATCGCTT, ATTCC...]
+
+create postrack: list #list of positions
+
+Example: postrack = [76739782, 76875967, 76708822 ...]
 
 for each line in SAM #until lines no longer start with @ symbol
 	header: string += all lines that start with @ 
 
 write header to newSAM file
 
+duplicates = 0 #counter
+
 for each line in SAM #after header
-	Create seqlist: list #temporary 
-	Split(\t) columns into list [0-11] (QNAME, FLAG, RNAME, etc)
-	11 holds all data after quality column (not mandatory for SAM)
+	Create seqlist: list
+	Split(\t) columns into list [0-11] Example: [QNAME, FLAG, RNAME, etc] : all strings
+												11 = all data after quality column (not mandatory for SAM)
 	seqlist = [the, split, list, of, columns]
+	cigar = seqlist[5] 
+	position = seqlist[3]
 	
-	seqlist[0] = checkumi(seqlist[0]) -> string  #pass qname to checkumi() since it holds the UMI
+	if cigar contains an 's' (soft clip) as the first a-z character
+		pull integer that preceeds s (unless s is at the end, then what?)
+		position = position +/- value of s
 	
-	if seqlist[0] is not 0   #this means the UMI was preserved or corrected	
-		if sequence or seqlist[10] not in seqtrack #meaning the sequence is not a duplicate
-			add sequence to seqtrack
-				append seqlist to new SAM file, tab separated
+	if position is in postrack[] #meaning the sequence is a duplicate
+			duplicates += 1
+			go to next line
+		else # sequence not found yet
+			seqlist[0] = checkumi(seqlist[0]) -> string
+			if seqlist[0] is not 0 #UMI was preserved or corrected	
+				add position to postrack
+				append seqlist to new SAM file, tab separated #write the record to the new sam file
+
+print(duplicates + " duplicates found) #end output
 	
 #check hamming distance for the UMI against UMIlist, discard any hams > 1
 function checkumi(qname: string) -> string
@@ -40,7 +56,14 @@ function checkumi(qname: string) -> string
 			for i in range(8):
 				if qname[i] != umi[i]:
 					ham + 1
-			if ham < 2 (meaning if the string has less than 2 different characters)
-				replace qname[:8] with current UMI
+				
+					Example:  ATCG (good UMI) & ATTG (our UMI), ham = 1, our UMI is likely ATCG and not ATTG
+					Example:  ATCG (good UMI) & CAAC (our UMI), ham = 4, our UMI is likely invalid
+					
+			if ham < 2 (meaning if the string has 1 or 0 different characters)
+				replace qname[:8] with correct UMI
 				return qname
 		return 0 #no matches, UMI is invalid
+		
+OUTPUT: newSAM.sam
+CONSOLE: 392 duplicates found
