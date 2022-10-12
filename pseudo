@@ -31,9 +31,12 @@ for each line in SAM #after header
 	cigar = seqlist[5] 
 	position = seqlist[3]
 	
+	if bitflag shows strand
+		set current strand
+		
 	if cigar contains an 's' (soft clip) as the first a-z character
 		pull integer that preceeds s (unless s is at the end, then what?)
-		position = position +/- value of s
+		position = position +/- value of s.... do math based on strand?
 	
 	if position is in postrack[] #meaning the sequence is a duplicate
 			duplicates += 1
