@@ -7,9 +7,9 @@ parser.add_argument('-u', '--umifile', help='UMI List', nargs=1, type=str)
 parser.add_argument('-f', '--infile', help='SORTED SAM Input File (in.sam)', nargs=1, type=str)
 parser.add_argument('-o', '--outfile', help='SORTED SAM Output File (out.sam)', nargs=1, type=str)
 args = parser.parse_args()
-umifile = open(args.umifile, "r")
-samfile = open(args.infile, "r")
-outfile = open(args.outfile, "w")
+umifile = open(args.umifile[0], "r")
+samfile = open(args.infile[0], "r")
+outfile = open(args.outfile[0], "w")
 
 def data_points(line: str) -> list: #[umi, strand, chrom, startpos, cigar, seq]
     line = re.split(r'\t+', line) #split line by tabs
