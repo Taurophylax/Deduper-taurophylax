@@ -3,7 +3,7 @@ import os
 import argparse as ap
 
 parser = ap.ArgumentParser(description='taurophylax_deduper.py ')
-parser.add_argument('-u', '--umifile', help='UMI List', nargs=1, type=str)
+parser.add_argument('-u', '--umifile', help='File containing UMI list (1 UMI per line)', nargs=1, type=str)
 parser.add_argument('-f', '--infile', help='SORTED SAM Input File (in.sam)', nargs=1, type=str)
 parser.add_argument('-o', '--outfile', help='SORTED SAM Output File (out.sam)', nargs=1, type=str)
 args = parser.parse_args()
