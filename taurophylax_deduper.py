@@ -31,7 +31,7 @@ def find_start(cigar: str, startpos: int, strand: str) -> int:    #parse cigar s
         if S: startpos -= S                 # Sub S from our start position 
     else: #if strand == "-"
         S = re.findall(r'(\d+)S', cigar)    # Find all S
-        if S: S = int(S[1])                 # Convert it to int and also drop any other S occurances. RIGHT clip.
+        if S: S = int(S[-1])                 # Convert it to int and also drop any other S occurances. RIGHT clip.
         if S: startpos += S                 # Add S to our start position 
         M = re.findall(r'(\d+)M', cigar)    # Find all M
         if M: M = [int(i) for i in M]       # Convert list.str to list.int
@@ -39,7 +39,7 @@ def find_start(cigar: str, startpos: int, strand: str) -> int:    #parse cigar s
         D = re.findall(r'(\d+)D', cigar)    # Find all D
         if D: D = [int(i) for i in D]             
         if D: startpos += sum(D)  
-        N = re.findall(r'(\d+)N', cigar)    # Find all D
+        N = re.findall(r'(\d+)N', cigar)    # Find all N
         if N: N = [int(i) for i in N]             
         if N: startpos += sum(N)  
     return startpos
@@ -50,8 +50,10 @@ for a in umifile: master_umi_list.append(a.strip()) #grab umi's from STL96.txt
 chunk = [] #chunk of lines for parsing (FIFO)
 dupes = 0 #duplicate counter
 badumi = 0 #invalid UMIs
+linenum = 0 #line counter
 
 while 1: 
+    linenum += 1
     line = samfile.readline()
     if line == "":  #if EOF, break loop
         samfile.close()
@@ -65,15 +67,17 @@ while 1:
             startpos = find_start(linedata[4], linedata[3], linedata[1]) #pass (cigar, startpos, strand) returns adjusted startpos
             linedata[3] = startpos  #update linedata with adjusted start position
             check = [linedata[0], linedata[1], linedata[2], linedata[3]]
-            if check not in chunk:
-                chunk.append(check)
-                if len(chunk) > 100:  #if chunk is over 100 entries, remove the oldest (FIFO)
-                    chunk.pop(0)
+            if check not in chunk:      #chunking is a buffer to limit memory usage - reads 'chunk' lines at a time
+                chunk.append(check)     #chunking greatly affects speed: 1000 fast, 10000 medium, >50000 slow (recommended)
+                if len(chunk) > 50000:  #if chunk is over 50000 reads, remove the oldest (FIFO)
+                    chunk.pop(0)        #note: for best accuracy, use chunking of 50,000 or higher
                 outfile.write(line)
             else:
                 dupes += 1
+                #print("Dupe found on line: " + str(linenum))    #comment out if file is large
         else:
             badumi += 1
+            print("Bad UMI on line: " + str(linenum) + " - " + linedata[0])
 
 print("Duplicates found: " + str(dupes))
 print("Invalid UMIs: " + str(badumi))
