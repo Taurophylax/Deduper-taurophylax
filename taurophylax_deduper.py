@@ -7,9 +7,7 @@ parser.add_argument('-u', '--umifile', help='File containing UMI list (1 UMI per
 parser.add_argument('-f', '--infile', help='SORTED SAM Input File (in.sam)', nargs=1, type=str)
 parser.add_argument('-o', '--outfile', help='SORTED SAM Output File (out.sam)', nargs=1, type=str)
 args = parser.parse_args()
-umifile = open(args.umifile[0], "r")
-samfile = open(args.infile[0], "r")
-outfile = open(args.outfile[0], "w")
+umifile, samfile, outfile = open(args.umifile[0], "r"), open(args.infile[0], "r"), open(args.outfile[0], "w")
 
 def data_points(line: str) -> list: #[umi, strand, chrom, startpos, cigar, seq]
     line = re.split(r'\t+', line) #split line by tabs
@@ -74,10 +72,8 @@ while 1:
                 outfile.write(line)
             else:
                 dupes += 1
-                #print("Dupe found on line: " + str(linenum))    #comment out if file is large
         else:
             badumi += 1
-            print("Bad UMI on line: " + str(linenum) + " - " + linedata[0])
 
 print("Duplicates found: " + str(dupes))
 print("Invalid UMIs: " + str(badumi))
