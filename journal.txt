@@ -1,0 +1,38 @@
+Super Duper Dupe Scooper
+
+-Python 3.10
+
+1. 
+Started by coding  function for what sounds like the hardest part- cigar strings. 
+Used regex to split up and assign each piece of cigar
+Calculates the "true position" based on these pieces.
+
+2. 
+Next coded a function to split up the lines in to variables
+#[umi, strand, chrom, startpos, cigar, seq]
+Pulls UMI by grabbing the last 8 characters of the qname
+Strand is a bitwise check
+Chrom, cigar, and seq, are read from the line
+startpos is calculated from our first function
+
+3. 
+Read in UMI file as an umi "master list"
+Check each line for ^@ to determine a header line, immediately transfer to outfile and go to next line
+Also check for empty line to determine end of file (break loop)
+Check UMI of each line. If it doesn't match umi master list, "drop" the line and go too the next one. 
+
+4. 
+Leslie said to "avoid loading everything to memory" so I decided to do a chunking algorithm that only keeps X lines in memory
+to check new lines for duplicates. This is SLLLOOOWWWWW. 
+Since the SAM file is sorted by chromosome position, it's unlikely that a duplicate will occur more than 1000 lines away, 
+but it's possible, so I increased it to 50,000 lines. It's much slower but also more accurate. 
+
+Chunking uses FIFO, so when the 50,000th line is added, line 0 is removed with pop(0)
+
+This is not a good method to use! However, I am proud that it doesn't use any memory. 
+-I want to stick to this method just to see how it compares to my peers.-
+
+Dupes found: 4,459,345
+Runtime: 8hrs 40 minutes
+Memory used: 37 MB
+
